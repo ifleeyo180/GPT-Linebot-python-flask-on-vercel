@@ -32,6 +32,13 @@ def callback():
         abort(400)
     return 'OK'
 
+# 定義關鍵字字典
+keywords = {
+    "/指令查詢": "目前指令有：\n 1. /日誌 \n 2. /erp \n 3. /信箱 \n 記得加 / U+2757❗",
+    "/日誌": "https://reurl.cc/Y86yq4",
+    "/erp": "https://reurl.cc/d756yq",
+    "/信箱": "https://reurl.cc/6Nlrdk",
+}
 
 @line_handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -51,6 +58,13 @@ def handle_message(event):
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text="好的，我乖乖安靜 > <，如果想要我繼續說話，請跟我說 「說話」 > <"))
+        return
+    
+    if event.message.text in keywords:
+        # 回覆
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=keywords[event.message.text]))
         return
 
     if working_status:
