@@ -35,6 +35,8 @@ def callback():
 # 定義關鍵字字典
 keywords = {
     "/指令查詢": "目前指令有：\n 1. /日誌 \n 2. /erp \n 3. /信箱 \n 👉 記得加 / ❗",
+    "/說話": "開啟機器人對話",
+    "/安靜": "關閉機器人對話",
     "/日誌": "https://reurl.cc/Y86yq4",
     "/erp": "https://reurl.cc/d756yq",
     "/信箱": "https://reurl.cc/6Nlrdk",
@@ -46,18 +48,18 @@ def handle_message(event):
     if event.message.type != "text":
         return
     
-    if event.message.text == "說話":
+    if event.message.text == "/說話":
         working_status = True
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="我可以說話囉，歡迎來跟我互動 ^_^ "))
+            TextSendMessage(text="開啟機器人對話，可輸入 👉 /指令查詢 👈 "))
         return
 
-    if event.message.text == "安靜":
+    if event.message.text == "/安靜":
         working_status = False
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="好的，我乖乖安靜 > <，如果想要我繼續說話，請跟我說 「說話」 > <"))
+            TextSendMessage(text="關閉機器人對話，輸入 👉 /說話 👈 則再次開啟😻"))
         return
     
     if event.message.text in keywords:
