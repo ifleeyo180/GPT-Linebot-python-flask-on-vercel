@@ -46,9 +46,6 @@ def handle_message(event):
     if event.message.type != "text":
         return
     
-    if "小小水靈GPT" not in event.message.text:
-        return
-
     if event.message.text == "說話":
         working_status = True
         line_bot_api.reply_message(
