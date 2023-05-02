@@ -66,7 +66,6 @@ def handle_message(event):
         # 增加訂閱者
         subscriber = Subscriber(id=event.source.user_id)
         if subscriber is None:
-        subscriber = Subscriber(id=event.source.user_id)
         db.session.add(subscriber)
         db.session.commit()
         line_bot_api.reply_message(
