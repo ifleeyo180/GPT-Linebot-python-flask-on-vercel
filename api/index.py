@@ -64,32 +64,33 @@ def handle_message(event):
 
     if event.message.text == "/訂閱":
         # 增加訂閱者
-        subscriber = Subscriber(id=event.source.user_id)
+        subscriber = Subscriber.query.get(event.source.user_id)
         if subscriber is None:
-        db.session.add(subscriber)
-        db.session.commit()
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="您已成功訂閱！"))
+            new_subscriber = Subscriber(id=event.source.user_id)
+            db.session.add(new_subscriber)
+            db.session.commit()
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="您已成功訂閱！"))
         else:
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="您已經訂閱。"))
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="您已經訂閱。"))
         return
 
     if event.message.text == "/取消訂閱":
         # 移除訂閱者
-    subscriber = Subscriber.query.get(event.source.user_id)
-    if subscriber is None:
-        db.session.delete(subscriber)
-        db.session.commit()
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="您已取消訂閱每週日誌提醒。"))
-    else:
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="您尚未訂閱。"))
+        subscriber = Subscriber.query.get(event.source.user_id)
+        if subscriber is not None:
+            db.session.delete(subscriber)
+            db.session.commit()
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="您已取消訂閱每週日誌提醒。"))
+        else:
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="您尚未訂閱。"))
         return
 
     if event.message.text == "/說話":
@@ -138,7 +139,7 @@ def send_reminder():
 if __name__ == "__main__":
     scheduler = BackgroundScheduler()
     # scheduler.add_job(send_reminder, 'cron', day_of_week='sun', hour=9)
-    scheduler.add_job(send_reminder, 'interval', seconds=1)
+    scheduler.add_job(send_reminder, 'interval', seconds=30)
     scheduler.start()
 
     app.run()
