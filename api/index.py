@@ -142,4 +142,4 @@ if __name__ == "__main__":
     scheduler.add_job(send_reminder, 'interval', seconds=30)
     scheduler.start()
 
-    app.run()
+    app.run(debug=True)
