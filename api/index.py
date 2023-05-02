@@ -138,8 +138,8 @@ def send_reminder():
 
 if __name__ == "__main__":
     scheduler = BackgroundScheduler()
-    scheduler.add_job(send_reminder, 'cron', day_of_week='sun', hour=9)
-    # scheduler.add_job(send_reminder, 'interval', seconds=1)
+    # scheduler.add_job(send_reminder, 'cron', day_of_week='sun', hour=9)
+    scheduler.add_job(send_reminder, 'interval', seconds=1)
     scheduler.start()
 
     app.run()
