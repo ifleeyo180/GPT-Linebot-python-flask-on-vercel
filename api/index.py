@@ -5,21 +5,88 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from api.chatgpt import ChatGPT
 
 import os
+import urllib
+import json
 
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 line_handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
 working_status = os.getenv(
     "DEFALUT_TALKING", default="flase").lower() == "true"
 
+client_id = os.getenv('NOTIFY_CLIENT_ID')
+client_secret = os.getenv('NOTIFY_CLIENT_SECRET')
+redirect_uri = f"https://{os.getenv('YOUR_VERCEL_APP_NAME')}.vercel.app/callback/notify"
+
+
 app = Flask(__name__)
 chatgpt = ChatGPT()
-
-# domain root
 
 
 @app.route('/')
 def home():
     return 'Hello, World!'
+
+
+@app.route("/callback/notify", methods=['GET'])
+def callback_nofity():
+    assert request.headers['referer'] == 'https://notify-bot.line.me/'
+    code = request.args.get('code')
+    state = request.args.get('state')
+
+    # 接下來要繼續實作的函式
+    access_token = get_token(code, client_id, client_secret, redirect_uri)
+
+    return '恭喜完成 LINE Notify 連動！請關閉此視窗。'
+
+
+def create_auth_link(user_id, client_id=client_id, redirect_uri=redirect_uri):
+
+    data = {
+        'response_type': 'code',
+        'client_id': client_id,
+        'redirect_uri': redirect_uri,
+        'scope': 'notify',
+        'state': user_id
+    }
+    query_str = urllib.parse.urlencode(data)
+
+    return f'https://notify-bot.line.me/oauth/authorize?{query_str}'
+
+
+def get_token(code, client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri):
+    url = 'https://notify-bot.line.me/oauth/token'
+    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    data = {
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': redirect_uri,
+        'client_id': client_id,
+        'client_secret': client_secret
+    }
+    data = urllib.parse.urlencode(data).encode()
+    req = urllib.request.Request(url, data=data, headers=headers)
+    page = urllib.request.urlopen(req).read()
+
+    res = json.loads(page.decode('utf-8'))
+    return res['access_token']
+
+
+def send_message(access_token, text_message, picurl):
+
+    url = 'https://notify-api.line.me/api/notify'
+    headers = {"Authorization": "Bearer " + access_token}
+
+    data = {'message': text_message,
+            "stickerPackageId": 2, 'stickerId': 38,
+            'imageThumbnail': picurl, 'imageFullsize': picurl}
+
+    data = urllib.parse.urlencode(data).encode()
+    req = urllib.request.Request(url, data=data, headers=headers)
+    page = urllib.request.urlopen(req).read()
+
+
+def handle_message(event):
+    global working_status
 
 
 @app.route("/webhook", methods=['POST'])
@@ -50,6 +117,16 @@ keywords = {
 def handle_message(event):
     global working_status
     if event.message.type != "text":
+        return
+
+    # 如果用戶輸入的訊息是 "/連動 Line Notify"
+    if event.message.text == "/連動 Line Notify":
+        # 創建 LINE Notify 的連結
+        link = create_auth_link(event.source.user_id)
+        # 使用 LineBotAPI 的 push_message 函數來傳送訊息給用戶
+        line_bot_api.push_message(
+            event.source.user_id,
+            TextSendMessage(text=f'請點擊以下連結以連動 LINE Notify: {link}'))
         return
 
     if event.message.text == "/說話":
