@@ -7,14 +7,23 @@ from api.chatgpt import ChatGPT
 import os
 import urllib
 import json
+import base64
 
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 
-# 初始化Firebase
-cred = credentials.Certificate(json.loads(
-    os.environ['FIREBASE_SERVICE_ACCOUNT_KEY']))
+# 從環境變數中讀取 Base64 編碼的憑證
+base64_cred = os.environ['FIREBASE_SERVICE_ACCOUNT_KEY']
+
+# 將 Base64 編碼的憑證解碼為 JSON 字串
+json_cred = base64.b64decode(base64_cred).decode("utf-8")
+
+# 將 JSON 字串轉換成 Python 字典
+cred_dict = json.loads(json_cred)
+
+# 使用憑證初始化 Firebase Admin SDK
+cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred)
 
 
