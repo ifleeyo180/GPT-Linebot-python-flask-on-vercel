@@ -8,6 +8,16 @@ import os
 import urllib
 import json
 
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+
+# 初始化Firebase
+cred = credentials.Certificate(json.loads(
+    os.environ['FIREBASE_SERVICE_ACCOUNT_KEY']))
+firebase_admin.initialize_app(cred)
+
+
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 line_handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
 working_status = os.getenv(
@@ -27,6 +37,11 @@ def home():
     return 'Hello, World!'
 
 
+@app.route('/send-reminder', methods=['GET'])
+def send_reminder():
+    return send_weekly_reminder(request)
+
+
 @app.route("/callback/notify", methods=['GET'])
 def callback_nofity():
     assert request.headers['referer'] == 'https://notify-bot.line.me/'
@@ -35,6 +50,12 @@ def callback_nofity():
 
     # 接下來要繼續實作的函式
     access_token = get_token(code, client_id, client_secret, redirect_uri)
+
+    db = firestore.client()
+    doc_ref = db.collection(u'users').document(state)
+    doc_ref.set({
+        'access_token': access_token
+    })
 
     return '恭喜完成 LINE Notify 連動！請關閉此視窗。'
 
