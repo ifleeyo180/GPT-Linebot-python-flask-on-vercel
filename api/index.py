@@ -3,11 +3,17 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from api.chatgpt import ChatGPT
-from google.cloud import firestore
-
 import os
 import urllib
 import json
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+
+# 初始化 Firebase Admin SDK
+cred = credentials.Certificate(json.loads(
+    os.environ.get('FIREBASE_SERVICE_ACCOUNT_KEY')))
+firebase_admin.initialize_app(cred)
 
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 line_handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
