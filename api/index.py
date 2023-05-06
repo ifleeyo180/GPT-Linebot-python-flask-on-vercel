@@ -106,9 +106,7 @@ def send_message(access_token, text_message, picurl):
     url = 'https://notify-api.line.me/api/notify'
     headers = {"Authorization": "Bearer " + access_token}
 
-    data = {'message': text_message,
-            "stickerPackageId": 2, 'stickerId': 38,
-            'imageThumbnail': picurl, 'imageFullsize': picurl}
+    data = {'message': text_message}
 
     data = urllib.parse.urlencode(data).encode()
     req = urllib.request.Request(url, data=data, headers=headers)
