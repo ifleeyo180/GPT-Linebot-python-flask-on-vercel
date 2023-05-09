@@ -134,8 +134,8 @@ def callback():
 
 # 定義關鍵字字典
 keywords = {
-    "/指令查詢": "目前指令有：\n ✏ /日誌 \n ✏ /erp \n ✏ /信箱 \n ✏ /說話 (開啟機器人對話) \n ✏ /安靜 (關閉機器人對話) \n👉 記得加 / ❗",
-    "/日誌": "https://reurl.cc/Y86yq4",
+    "/指令查詢": "目前指令有：\n ✏ /日報 \n ✏ /erp \n ✏ /信箱 \n ✏ /連動日報提醒 \n ✏ /說話 (開啟機器人對話) \n ✏ /安靜 (關閉機器人對話) \n👉 記得加 / ❗",
+    "/日報": "https://reurl.cc/Y86yq4",
     "/erp": "https://reurl.cc/d756yq",
     "/信箱": "https://reurl.cc/6Nlrdk",
 }
@@ -148,7 +148,7 @@ def handle_message(event):
         return
 
     # 如果用戶輸入的訊息是 "/連動 Line Notify"
-    if event.message.text == "/連動 Line Notify":
+    if event.message.text == "/連動日報提醒":
         # 創建 LINE Notify 的連結
         link = create_auth_link(event.source.user_id)
         # 使用 LineBotAPI 的 push_message 函數來傳送訊息給用戶
