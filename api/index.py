@@ -10,6 +10,7 @@ import base64
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+
 # 從環境變數中讀取 Base64 編碼的憑證
 base64_cred = os.environ['FIREBASE_SERVICE_ACCOUNT_KEY']
 # 將 Base64 編碼的憑證解碼為 JSON 字串
@@ -19,6 +20,7 @@ cred_dict = json.loads(json_cred)
 # 使用憑證初始化 Firebase Admin SDK
 cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred)
+
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 line_handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
 working_status = os.getenv(
@@ -26,6 +28,7 @@ working_status = os.getenv(
 client_id = os.getenv('NOTIFY_CLIENT_ID')
 client_secret = os.getenv('NOTIFY_CLIENT_SECRET')
 redirect_uri = f"https://{os.getenv('YOUR_VERCEL_APP_NAME')}.vercel.app/callback/notify"
+
 app = Flask(__name__)
 chatgpt = ChatGPT()
 
