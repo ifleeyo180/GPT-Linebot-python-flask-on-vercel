@@ -30,7 +30,7 @@ firebase_admin.initialize_app(cred)
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 line_handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
 working_status = os.getenv(
-    "DEFALUT_TALKING", default="flase").lower() == "true"
+    "DEFALUT_TALKING", default="false").lower() == "true"
 
 client_id = os.getenv('NOTIFY_CLIENT_ID')
 client_secret = os.getenv('NOTIFY_CLIENT_SECRET')
