@@ -21,8 +21,7 @@ cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred)
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 line_handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
-working_status = os.getenv(
-    "DEFALUT_TALKING", default="false").lower() == "true"
+working_status = os.getenv("DEFALUT_TALKING", default="true").lower() == "true"
 client_id = os.getenv('NOTIFY_CLIENT_ID')
 client_secret = os.getenv('NOTIFY_CLIENT_SECRET')
 redirect_uri = f"https://{os.getenv('YOUR_VERCEL_APP_NAME')}.vercel.app/callback/notify"
@@ -120,6 +119,7 @@ keywords = {
 @line_handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     global working_status
+
     if event.message.type != "text":
         return
     # 如果用戶輸入的訊息是 "/連動 Line Notify"
