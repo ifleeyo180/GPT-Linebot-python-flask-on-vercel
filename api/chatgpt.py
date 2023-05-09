@@ -1,5 +1,4 @@
 from api.prompt import Prompt
-
 import os
 import openai
 

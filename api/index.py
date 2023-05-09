@@ -3,40 +3,29 @@ from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from api.chatgpt import ChatGPT
-
 import os
 import urllib
 import json
 import base64
-
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
-
 # 從環境變數中讀取 Base64 編碼的憑證
 base64_cred = os.environ['FIREBASE_SERVICE_ACCOUNT_KEY']
-
 # 將 Base64 編碼的憑證解碼為 JSON 字串
 json_cred = base64.b64decode(base64_cred).decode("utf-8")
-
 # 將 JSON 字串轉換成 Python 字典
 cred_dict = json.loads(json_cred)
-
 # 使用憑證初始化 Firebase Admin SDK
 cred = credentials.Certificate(cred_dict)
 firebase_admin.initialize_app(cred)
-
-
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 line_handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
 working_status = os.getenv(
     "DEFALUT_TALKING", default="false").lower() == "true"
-
 client_id = os.getenv('NOTIFY_CLIENT_ID')
 client_secret = os.getenv('NOTIFY_CLIENT_SECRET')
 redirect_uri = f"https://{os.getenv('YOUR_VERCEL_APP_NAME')}.vercel.app/callback/notify"
-
-
 app = Flask(__name__)
 chatgpt = ChatGPT()
 
@@ -56,21 +45,17 @@ def callback_nofity():
     assert request.headers['referer'] == 'https://notify-bot.line.me/'
     code = request.args.get('code')
     state = request.args.get('state')
-
     # 接下來要繼續實作的函式
     access_token = get_token(code, client_id, client_secret, redirect_uri)
-
     db = firestore.client()
     doc_ref = db.collection(u'users').document(state)
     doc_ref.set({
         'access_token': access_token
     })
-
     return '恭喜完成 LINE Notify 連動！請關閉此視窗。'
 
 
 def create_auth_link(user_id, client_id=client_id, redirect_uri=redirect_uri):
-
     data = {
         'response_type': 'code',
         'client_id': client_id,
@@ -79,7 +64,6 @@ def create_auth_link(user_id, client_id=client_id, redirect_uri=redirect_uri):
         'state': user_id
     }
     query_str = urllib.parse.urlencode(data)
-
     return f'https://notify-bot.line.me/oauth/authorize?{query_str}'
 
 
@@ -96,25 +80,17 @@ def get_token(code, client_id=client_id, client_secret=client_secret, redirect_u
     data = urllib.parse.urlencode(data).encode()
     req = urllib.request.Request(url, data=data, headers=headers)
     page = urllib.request.urlopen(req).read()
-
     res = json.loads(page.decode('utf-8'))
     return res['access_token']
 
 
 def send_message(access_token, text_message, picurl):
-
     url = 'https://notify-api.line.me/api/notify'
     headers = {"Authorization": "Bearer " + access_token}
-
     data = {'message': text_message}
-
     data = urllib.parse.urlencode(data).encode()
     req = urllib.request.Request(url, data=data, headers=headers)
     page = urllib.request.urlopen(req).read()
-
-
-def handle_message(event):
-    global working_status
 
 
 @app.route("/webhook", methods=['POST'])
@@ -146,7 +122,6 @@ def handle_message(event):
     global working_status
     if event.message.type != "text":
         return
-
     # 如果用戶輸入的訊息是 "/連動 Line Notify"
     if event.message.text == "/連動日報提醒":
         # 創建 LINE Notify 的連結
@@ -156,28 +131,24 @@ def handle_message(event):
             event.source.user_id,
             TextSendMessage(text=f'請點擊以下連結以連動 LINE Notify: {link}'))
         return
-
     if event.message.text == "/說話":
         working_status = True
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text="開啟機器人對話，可輸入 👉 /指令查詢 👈 "))
         return
-
     if event.message.text == "/安靜":
         working_status = False
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text="關閉機器人對話，輸入 👉 /說話 👈 則再次開啟😻"))
         return
-
     if event.message.text in keywords:
         # 回覆
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=keywords[event.message.text]))
         return
-
     if working_status:
         chatgpt.add_msg(f"HUMAN:{event.message.text}?\n")
         reply_msg = chatgpt.get_response().replace("AI:", "", 1)
